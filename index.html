@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Расписание 10606123</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: #0b0f0e;
+      --card-bg: rgba(23, 29, 27, 0.75);
+      --inner-card-bg: rgba(30, 40, 36, 0.85);
+      --pill-bg: #151c19;
+      --accent-green: #1d4d38;
+      --active-text: #eafff5;
+      --text-main: #f3f5f4;
+      --text-muted: #7e8b85;
+      --border-color: rgba(255, 255, 255, 0.05);
+      --badge-bg: #1e3a2f;
+      --badge-text: #a8dfbc;
+      --warning-color: #eab308;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body {
+      background-color: var(--bg-color);
+      background-image: radial-gradient(circle at 10% 20%, rgba(20, 45, 35, 0.45) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(15, 35, 25, 0.45) 0%, transparent 50%);
+      color: var(--text-main); min-height: 100vh; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
+    .title { font-size: 24px; font-weight: 800; letter-spacing: -0.3px; }
+    .group-meta { text-align: right; }
+    .group-number { font-size: 15px; font-weight: 700; }
+    .group-sub { font-size: 11px; color: var(--text-muted); }
+    .capsule-row { background: var(--pill-bg); border: 1px solid var(--border-color); border-radius: 30px; padding: 4px; display: flex; gap: 4px; }
+    .capsule-btn { flex: 1; text-align: center; padding: 10px 0; border-radius: 24px; font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; background: transparent; border: none; }
+    .capsule-btn.active { background: var(--accent-green); color: var(--active-text); }
+    .days-row { background: var(--pill-bg); border: 1px solid var(--border-color); border-radius: 28px; padding: 4px; display: flex; }
+    .day-btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; background: transparent; border: none; }
+    .day-btn.active { background: var(--accent-green); color: var(--active-text); }
+    .schedule-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 26px; padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; min-height: 400px; }
+    .lesson-item { display: flex; gap: 14px; position: relative; padding-bottom: 18px; }
+    .lesson-item:not(:last-child)::after { content: ""; position: absolute; bottom: 0; left: 60px; right: 0; height: 1px; background: rgba(255, 255, 255, 0.05); }
+    .time-col { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; }
+    .time-start { font-size: 14px; font-weight: 800; color: #fff; }
+    .time-end { font-size: 11px; color: var(--text-muted); }
+    .lesson-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .lesson-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .lesson-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3; }
+    .type-badge { background: var(--badge-bg); color: var(--badge-text); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; text-transform: lowercase; border: 1px solid rgba(168, 223, 188, 0.1); }
+    .lesson-info { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .info-row { display: flex; align-items: center; gap: 6px; }
+    .info-icon { width: 12px; height: 12px; opacity: 0.6; }
+    .subgroups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .subgroup-box { background: var(--inner-card-bg); border-radius: 16px; padding: 12px 10px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 6px; }
+    .subgroup-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .no-lesson { color: #4a5553; font-style: italic; font-size: 12px; margin-top: 10px; }
+    .empty-state { text-align: center; padding: 60px 0; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title">Расписание <span style="color:var(--warning-color)">⚠</span></div>
+    <div class="group-meta">
+      <div class="group-number">10606123</div>
+      <div class="group-sub">ЭФ · 4 курс</div>
+    </div>
+  </header>
+
+  <div class="capsule-row" id="week-tabs">
+    <button class="capsule-btn active" data-week="1">1 неделя</button>
+    <button class="capsule-btn" data-week="2">2 неделя</button>
+  </div>
+
+  <div class="days-row" id="day-tabs">
+    <button class="day-btn active" data-day="mon">ПН</button>
+    <button class="day-btn" data-day="tue">ВТ</button>
+    <button class="day-btn" data-day="wed">СР</button>
+    <button class="day-btn" data-day="thu">ЧТ</button>
+    <button class="day-btn" data-day="fri">ПТ</button>
+    <button class="day-btn" data-day="sat">СБ</button>
+  </div>
+
+  <main class="schedule-card" id="schedule-container"></main>
+
+  <script>
+    const SCHEDULE = {
+      1: {
+        mon: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", badge: "лаб", title: "Тепловые электрические станции", teacher: "ст.пр. Некало И.А.", room: "а.702 к.21" }, { label: "2-я подгруппа", badge: "лаб", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.710 к.21" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "лек", title: "Тепловые электрические станции", teacher: "ст.пр. Мухин А.Д.", room: "а.702 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "пр", title: "Тепловые электрические станции", teacher: "ст.пр. Мухин А.Д.", room: "а.702 к.21" },
+          { timeS: "13:55", timeE: "15:30", type: "single", badge: "лек", title: "Турбомашины", teacher: "Пантелей Н.В.", room: "а.8 к.2" }
+        ],
+        tue: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", badge: "лаб", title: "Автоматизация системы управления ТП", teacher: "доц. Кравченко В.В.", room: "а.714 к.21" }, { label: "2-я подгруппа", title: "Нет пары" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "лек", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.711 к.21" }
+        ],
+        wed: [
+          { timeS: "08:00", timeE: "09:35", type: "single", badge: "лек", title: "Автоматизация водоподготовки и ВХ режимов", teacher: "ст.пр. Некало И.А.", room: "а.713 к.21" },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "пр", title: "Электрооборудование электрических станций", teacher: "Артеменко Е.А.", room: "а.1006 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "лек", title: "Электрооборудование электрических станций", teacher: "пр. Артеменко Е.А.", room: "а.1007 к.21" },
+          { timeS: "13:55", timeE: "15:30", type: "single", badge: "конс", title: "Автоматизация водоподготовки и ВХ режимов", teacher: "ст.пр. Некало И.А.", room: "а.705 к.21" }
+        ],
+        thu: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", badge: "лаб", title: "Автоматизация водоподготовки и ВХ режимов", teacher: "пр. Райко П.А.", room: "а.713 к.21" }, { label: "2-я подгруппа", title: "Нет пары" } ] },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "пр", title: "Турбомашины", teacher: "ст.пр. Пантелей Н.В.", room: "а.713 к.21" },
+          { timeS: "13:55", timeE: "15:30", type: "sub", subs: [ { label: "1-я подгруппа", badge: "пр", title: "Турбомашины", teacher: "ст.пр. Пантелей Н.В.", room: "а.8 к.2" }, { label: "2-я подгруппа", title: "Нет пары" } ] }
+        ],
+        fri: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", badge: "лаб", title: "Охрана труда", teacher: "пр. Кондраль А.Е.", room: "а.381 к.1" }, { label: "2-я подгруппа", title: "Нет пары" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "лек", title: "Охрана труда", teacher: "пр. Кондраль А.Е.", room: "а.381 к.1" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "лек", title: "Автоматизация системы управления ТП", teacher: "доц. Кравченко В.В.", room: "а.303 к.8" }
+        ],
+        sat: [
+          { timeS: "08:00", timeE: "09:35", type: "single", badge: "лек", title: "Экономика энергетики", teacher: "пр.Цедрик А.В.", room: "а.907 к.21" },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "пр", title: "Экономика энергетики", teacher: "пр.Цедрик А.В.", room: "а.907 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "пр", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.711 к.21" }
+        ]
+      },
+      2: {
+        mon: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", badge: "лаб", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.710 к.21" }, { label: "2-я подгруппа", badge: "лаб", title: "Тепловые электрические станции", teacher: "ст.пр. Некало И.А.", room: "а.702 к.21" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "лек", title: "Тепловые электрические станции", teacher: "ст. пр. Мухин А.Д.", room: "а.702 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "пр", title: "Автоматизация системы управления ТП", teacher: "доц. Кравченко В.В.", room: "а.701 к.21" },
+          { timeS: "13:55", timeE: "15:30", type: "single", badge: "лек", title: "Турбомашины", teacher: "Пантелей Н.В.", room: "а.8 к.2" }
+        ],
+        tue: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", title: "Нет пары" }, { label: "2-я подгруппа", badge: "лаб", title: "Автоматизация системы управления ТП", teacher: "доц. Кравченко В.В.", room: "а.714 к.21" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "лек", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.711 к.21" }
+        ],
+        wed: [
+          { timeS: "08:00", timeE: "09:35", type: "single", badge: "лек", title: "Автоматизация водоподготовки и ВХ режимов", teacher: "ст.пр. Некало И.А.", room: "а.713 к.21" },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "пр", title: "Автоматизация водоподготовки и ВХ режимов", teacher: "ст.пр. Некало И.А.", room: "а.713 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "лек", title: "Электрооборудование электрических станций", teacher: "пр. Артеменко Е.А.", room: "а.1007 к.21" },
+          { timeS: "13:55", timeE: "15:30", type: "single", badge: "пр", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.711 к.21" }
+        ],
+        thu: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", title: "Нет пары" }, { label: "2-я подгруппа", badge: "лаб", title: "Автоматизация водоподготовки и ВХ режимов", teacher: "пр. Райко П.А.", room: "а.713 к.21" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "конс", title: "Автоматизация системы управления ТП", teacher: "доц. Кравченко В.В.", room: "а.706 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "пр", title: "Турбомашины", teacher: "ст.пр. Пантелей Н.В.", room: "а.713 к.21" },
+          { timeS: "13:55", timeE: "15:30", type: "sub", subs: [ { label: "1-я подгруппа", title: "Нет пары" }, { label: "2-я подгруппа", badge: "пр", title: "Турбомашины", teacher: "ст.пр. Пантелей Н.В.", room: "а.8 к.2" } ] }
+        ],
+        fri: [
+          { timeS: "08:00", timeE: "09:35", type: "sub", subs: [ { label: "1-я подгруппа", title: "Нет пары" }, { label: "2-я подгруппа", badge: "лаб", title: "Охрана труда", teacher: "пр. Кондраль А.Е.", room: "а.381 к.1" } ] },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "лек", title: "Охрана труда", teacher: "пр. Кондраль А.Е.", room: "а.381 к.1" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "лек", title: "Автоматизация системы управления ТП", teacher: "доц. Кравченко В.В.", room: "а.303 к.8" }
+        ],
+        sat: [
+          { timeS: "08:00", timeE: "09:35", type: "single", badge: "лек", title: "Экономика энергетики", teacher: "пр.Цедрик А.В.", room: "а.907 к.21" },
+          { timeS: "09:55", timeE: "11:30", type: "single", badge: "пр", title: "Экономика энергетики", teacher: "пр.Цедрик А.В.", room: "а.907 к.21" },
+          { timeS: "11:40", timeE: "13:15", type: "single", badge: "пр", title: "Программируемые логические контроллеры для управления ТЭ процессами", teacher: "пр. Борисёнок П.К.", room: "а.711 к.21" }
+        ]
+      }
+    };
+
+    let currentWeek = 1; let currentDay = "mon";
+    const container = document.getElementById('schedule-container');
+    const iconT = `<svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const iconR = `<svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`;
+
+    function render() {
+      const list = SCHEDULE[currentWeek][currentDay];
+      if (!list || list.length === 0) { container.innerHTML = `<div class="empty-state">В этот день пар нет ☕</div>`; return; }
+      container.innerHTML = list.map(item => {
+        if (item.type === 'sub') {
+          return `<div class="lesson-item"><div class="time-col"><span class="time-start">${item.timeS}</span><span class="time-end">${item.timeE}</span></div><div class="lesson-body"><div class="subgroups-grid">${item.subs.map(s => `
+            <div class="subgroup-box"><div class="lesson-header"><span class="subgroup-label">${s.label}</span>${s.badge ? `<span class="type-badge">${s.badge}</span>`:''}</div><div class="lesson-title">${s.title}</div>${s.teacher ? `<div class="lesson-info"><div class="info-row">${iconT}<span>${s.teacher}</span></div><div class="info-row">${iconR}<span>${s.room}</span></div></div>` : `<div class="no-lesson">Нет пары</div>`}</div>`).join('')}</div></div></div>`;
+        }
+        return `<div class="lesson-item"><div class="time-col"><span class="time-start">${item.timeS}</span><span class="time-end">${item.timeE}</span></div><div class="lesson-body"><div class="lesson-header"><span class="lesson-title">${item.title}</span><span class="type-badge">${item.badge}</span></div><div class="lesson-info"><div class="info-row">${iconT}<span>${item.teacher}</span></div><div class="info-row">${iconR}<span>${item.room}</span></div></div></div></div>`;
+      }).join('');
+    }
+
+    document.querySelectorAll('[data-week]').forEach(b => b.onclick = () => { document.querySelector('[data-week].active').classList.remove('active'); b.classList.add('active'); currentWeek = b.dataset.week; render(); });
+    document.querySelectorAll('[data-day]').forEach(b => b.onclick = () => { document.querySelector('[data-day].active').classList.remove('active'); b.classList.add('active'); currentDay = b.dataset.day; render(); });
+    render();
+    if (window.Telegram && window.Telegram.WebApp) {
+      Telegram.WebApp.ready(); 
+      Telegram.WebApp.expand();
+    }
+  </script>
+</body>
+</html>
